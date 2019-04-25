@@ -27,7 +27,7 @@ class PropertyNotFoundException extends Exception
      * @param object $object
      * @param string $annotationClassName
      */
-    public function __construct($object, string $annotationClassName)
+    public function __construct($object, $annotationClassName)
     {
         $this->className = get_class($object);
         $this->annotationClassName = $annotationClassName;
