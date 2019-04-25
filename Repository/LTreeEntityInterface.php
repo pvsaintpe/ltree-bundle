@@ -30,7 +30,7 @@ interface LTreeEntityInterface
      * @param array|null $path
      * @return LTreeEntityInterface
      */
-    public function setPath(?array $path): self;
+    public function setPath(?array $path);
 
     /**
      * @return int
@@ -38,16 +38,16 @@ interface LTreeEntityInterface
     public function getLevel(): int;
 
     /**
-     * @param object $child
+     * @param object $children
      * @return object
      */
-    public function addChildren($child);
+    public function addChildren($children);
 
     /**
-     * @param object $child
+     * @param object $children
      * @return object
      */
-    public function removeChildren($child);
+    public function removeChildren($children);
 
     /**
      * @return ArrayCollection|object[]
