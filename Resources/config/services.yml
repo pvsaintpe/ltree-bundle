@@ -1,0 +1,36 @@
+services:
+    ltree_bundle.listener.ltreesubscriber:
+        class: 'LTree\Listener\LTreeSubscriber'
+        arguments:
+            $annotationDriver: '@ltree_bundle.annotation.annotation_driver'
+            $propertyAccessor: '@property_accessor'
+        tags:
+            - { name: 'doctrine.event_subscriber' }
+
+    ltree_bundle.annotation.annotation_driver:
+        class: 'LTree\Annotation\Driver\AnnotationDriver'
+        arguments:
+            $reader: '@annotation_reader'
+
+    ltree_bundle.treebuilder.treebuilderfromarrayresult:
+        class: 'LTree\TreeBuilder\TreeBuilderFromArrayResult'
+        public: false
+
+    ltree_bundle.treebuilder.treebuilderfromobjectresult:
+        class: 'LTree\TreeBuilder\TreeBuilderFromObjectResult'
+        arguments:
+            $propertyAccessor: '@property_accessor'
+        public: false
+
+    ltree_bundle.treebuilder.treebuilder:
+        class: 'LTree\TreeBuilder\TreeBuilder'
+        arguments:
+            $arrayBuilder: '@ltree_bundle.treebuilder.treebuilderfromarrayresult'
+            $objectBuilder: '@ltree_bundle.treebuilder.treebuilderfromobjectresult'
+
+    ltree_bundle.repository_factory:
+        class: 'LTree\Repository\RepositoryFactory'
+        arguments:
+            $annotationDriver: '@ltree_bundle.annotation.annotation_driver'
+            $propertyAccessor: '@property_accessor'
+            $treeBuilder: '@ltree_bundle.treebuilder.treebuilder'
