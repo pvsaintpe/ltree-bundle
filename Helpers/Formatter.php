@@ -18,7 +18,7 @@ class Formatter
      * @param int $pad_type
      * @return string
      */
-    public function asLTree(string $name, int $level = 1, string $pad_string = self::PAD_STRING, int $pad_type = self::PAD_TYPE): string
+    public static function asLTree(string $name, int $level = 1, string $pad_string = self::PAD_STRING, int $pad_type = self::PAD_TYPE): string
     {
         $level = ($level < 1) ? 1 : $level;
         return str_pad($name, strlen($name) + strlen($pad_string) * ($level - 1), $pad_string, $pad_type);
