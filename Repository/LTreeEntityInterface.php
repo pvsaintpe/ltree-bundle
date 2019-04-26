@@ -11,10 +11,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 interface LTreeEntityInterface
 {
     /**
-     * @param object|null $parent
+     * @param object|null|LTreeEntityInterface $parent
      * @return object
      */
-    public function setParent($parent);
+    public function setParent(LTreeEntityInterface $parent);
 
     /**
      * @return object|null
@@ -38,19 +38,19 @@ interface LTreeEntityInterface
     public function getLevel(): int;
 
     /**
-     * @param object $children
+     * @param object|LTreeEntityInterface $children
      * @return object
      */
-    public function addChildren($children);
+    public function addChildren(LTreeEntityInterface $children);
 
     /**
-     * @param object $children
+     * @param object|LTreeEntityInterface $children
      * @return object
      */
-    public function removeChildren($children);
+    public function removeChildren(LTreeEntityInterface $children);
 
     /**
-     * @return ArrayCollection|object[]
+     * @return ArrayCollection|object[]|LTreeEntityInterface[]
      */
     public function getChildren();
 }
