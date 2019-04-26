@@ -1,11 +1,11 @@
 {
   "name" : "pvsaintpe/ltree-bundle",
-  "description" : "Symfony bundle with additional functionality for postgresql ltee extension",
+  "description" : "Symfony >4.2.5 bundle with additional functionality for postgresql ltee extension",
   "version" : "1.0.0",
   "type" : "symfony-bundle",
   "homepage": "https://github.com/pvsaintpe/ltree-bundle",
   "license" : "MIT",
-  "keywords" : ["ltree", "postgresql", "symfony", "symfony4", "php73"],
+  "keywords" : ["ltree", "postgresql", "symfony", "symfony4", "php73", "php", "nested"],
   "authors" : [
       {
         "name" : "Veselov Pavel",
