@@ -69,5 +69,5 @@ interface LTreeEntityRepositoryInterface extends ObjectRepository
      * @param object $entity object entity
      * @param object|array $to object or path array
      */
-    public function moveNode($entity, $to);
+    public function moveNode($entity, $to = null);
 }
