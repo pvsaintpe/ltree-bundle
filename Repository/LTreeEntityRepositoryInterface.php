@@ -61,10 +61,10 @@ interface LTreeEntityRepositoryInterface extends ObjectRepository
     public function getAllChildrenQueryBuilder($entity): QueryBuilder;
 
     /**
-     * @param object $entity object entity
+     * @param object|null $entity object entity
      * @return QueryBuilder
      */
-    public function getInverseLTreeBuilder($entity): QueryBuilder;
+    public function getInverseLTreeBuilder($entity = null): QueryBuilder;
 
     /**
      * @param object $entity object entity

@@ -168,13 +168,18 @@ class LTreeEntityRepository extends EntityRepository implements LTreeEntityRepos
     }
 
     /**
-     * @param object $entity
+     * @param object|null $entity
      * @return QueryBuilder
      * @throws PropertyNotFoundException
      * @throws ReflectionException
      */
-    public function getInverseLTreeBuilder($entity): QueryBuilder
+    public function getInverseLTreeBuilder($entity = null): QueryBuilder
     {
+        if (empty($entity)) {
+            $entityClassName = $this->getClassName();
+            $entity = new $entityClassName;
+        }
+
         $this->checkClass($entity);
 
         $idName = $this->getAnnotationDriver()->getIdProperty($entity)->getName();
@@ -220,9 +225,7 @@ class LTreeEntityRepository extends EntityRepository implements LTreeEntityRepos
      */
     public function getAllLTree($hydrate = Query::HYDRATE_OBJECT)
     {
-        $entityClassName = $this->getClassName();
-        $entity = new $entityClassName;
-        return $this->getInverseLTreeBuilder($entity)->getQuery()->getResult($hydrate);
+        return $this->getInverseLTreeBuilder()->getQuery()->getResult($hydrate);
     }
 
     /**
