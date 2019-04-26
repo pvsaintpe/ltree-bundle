@@ -192,7 +192,7 @@ class LTreeEntityRepository extends EntityRepository implements LTreeEntityRepos
         $this->checkClass($entity);
         $result = $this->getAllChildrenQueryBuilder($entity)->getQuery()->getResult($hydrate);
 
-        if ($treeMode && $hydrate !== Query::HYDRATE_OBJECT && $hydrate !== Query::HYDRATE_ARRAY) {
+        if ($treeMode && !in_array($hydrate, [Query::HYDRATE_OBJECT, Query::HYDRATE_ARRAY], true)) {
             throw new LogicException('If treeMode is true, hydration mode must be object or array');
         }
 
@@ -210,18 +210,23 @@ class LTreeEntityRepository extends EntityRepository implements LTreeEntityRepos
 
     /**
      * @param object $entity
-     * @param array|object $to
+     * @param array|object|null $to (if null move to root node)
      * @throws PropertyNotFoundException
      * @throws ReflectionException
+     * @return mixed
      */
-    public function moveNode($entity, $to)
+    public function moveNode($entity, $to = null)
     {
         $this->checkClass($entity);
-        $this->checkClass($to);
-
         $pathName = $this->getAnnotationDriver()->getPathProperty($entity)->getName();
         $oldPathValue = $this->getPropertyAccessor()->getValue($entity, $pathName);
-        $newPathValue = $this->getPropertyAccessor()->getValue($to, $pathName);
+
+        if ($to !== null) {
+            $this->checkClass($to);
+            $newPathValue = $this->getPropertyAccessor()->getValue($to, $pathName);
+        } else {
+            $newPathValue = [];
+        }
 
         $prepareString = static function ($str) use ($pathName) {
             $replacement = [
@@ -241,7 +246,7 @@ class LTreeEntityRepository extends EntityRepository implements LTreeEntityRepos
                     LTreeSubpathFunction::FUNCTION_NAME,
                     '(%alias%.%path%, (',
                     LTreeNlevelFunction::FUNCTION_NAME,
-                    '(:self_path)-1)))',
+                    '(:self_path) - 1)))',
                 ]))
             )
             ->where($prepareString(LTreeOperatorFunction::FUNCTION_NAME . '(%alias%.%path%, \'<@\', :self_path) = true'))

@@ -78,6 +78,16 @@ class AnnotationDriver implements AnnotationDriverInterface
     }
 
     /**
+     * @param $object
+     * @return ReflectionProperty
+     * @throws PropertyNotFoundException
+     */
+    public function getIdProperty($object): ReflectionProperty
+    {
+        return $this->findAnnotation($object, self::ID_ANNOTATION);
+    }
+
+    /**
      * @return Reader
      */
     public function getReader(): Reader

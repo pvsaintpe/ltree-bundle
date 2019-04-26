@@ -2,6 +2,7 @@
 
 namespace LTree\Annotation\Driver;
 
+use Doctrine\ORM\Mapping\Id;
 use LTree\Annotation\LTreeChilds;
 use LTree\Annotation\LTreeEntity;
 use LTree\Annotation\LTreeParent;
@@ -22,6 +23,8 @@ interface AnnotationDriverInterface
     public const PARENT_ANNOTATION = LTreeParent::class;
 
     public const PATH_ANNOTATION = LTreePath::class;
+
+    public const ID_ANNOTATION = Id::class;
 
     /**
      * Check that ltree entity annotation is in the $object
@@ -67,4 +70,10 @@ interface AnnotationDriverInterface
      * @return ReflectionProperty
      */
     public function getPathProperty($object): ReflectionProperty;
+
+    /**
+     * @param $object
+     * @return ReflectionProperty
+     */
+    public function getIdProperty($object): ReflectionProperty;
 }
