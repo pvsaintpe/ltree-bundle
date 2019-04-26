@@ -147,7 +147,6 @@ class TestEntity implements LTreeEntityInterface
 
 2. Create Repository class:
 ```php
-use App\Entity\Department;
 use Doctrine\ORM\EntityManagerInterface;
 use LTree\Repository\LTreeEntityRepository;
 
