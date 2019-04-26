@@ -48,6 +48,13 @@ interface LTreeEntityRepositoryInterface extends ObjectRepository
     public function getAllParent($entity, $hydrate = Query::HYDRATE_OBJECT);
 
     /**
+     * @param int $hydrate Doctrine processing mode to be used during hydration process.
+     *                               One of the Query::HYDRATE_* constants.
+     * @return array|mixed with parents for $entity. The root node is last
+     */
+    public function getAllLTree($hydrate = Query::HYDRATE_OBJECT);
+
+    /**
      * @param object $entity object entity
      * @return QueryBuilder
      */

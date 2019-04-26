@@ -213,6 +213,19 @@ class LTreeEntityRepository extends EntityRepository implements LTreeEntityRepos
     }
 
     /**
+     * @param int $hydrate
+     * @return array|mixed
+     * @throws PropertyNotFoundException
+     * @throws ReflectionException
+     */
+    public function getAllLTree($hydrate = Query::HYDRATE_OBJECT)
+    {
+        $entityClassName = $this->getClassName();
+        $entity = new $entityClassName;
+        return $this->getInverseLTreeBuilder($entity)->getQuery()->getResult($hydrate);
+    }
+
+    /**
      * @param object $entity
      * @param bool $treeMode
      * @param int $hydrate
