@@ -55,6 +55,12 @@ interface LTreeEntityRepositoryInterface extends ObjectRepository
 
     /**
      * @param object $entity object entity
+     * @return QueryBuilder
+     */
+    public function getInverseLTreeBuilder($entity): QueryBuilder;
+
+    /**
+     * @param object $entity object entity
      * @param bool $treeMode This flag set how result will be presented
      * @param int $hydrate Doctrine processing mode to be used during hydration process.
      *                               One of the Query::HYDRATE_* constants.

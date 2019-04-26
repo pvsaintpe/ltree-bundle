@@ -169,6 +169,39 @@ class LTreeEntityRepository extends EntityRepository implements LTreeEntityRepos
 
     /**
      * @param object $entity
+     * @return QueryBuilder
+     * @throws PropertyNotFoundException
+     * @throws ReflectionException
+     */
+    public function getInverseLTreeBuilder($entity): QueryBuilder
+    {
+        $this->checkClass($entity);
+
+        $idName = $this->getAnnotationDriver()->getIdProperty($entity)->getName();
+        $idValue = $this->getPropertyAccessor()->getValue($entity, $idName);
+        $pathName = $this->getAnnotationDriver()->getPathProperty($entity)->getName();
+
+        if ($idValue) {
+            $pathValue = $this->getPropertyAccessor()->getValue($entity, $pathName);
+            $pathValue[] = '*';
+        } else {
+            $pathValue = [];
+        }
+
+        $qb = $this->createQueryBuilder(static::LTREE_ALIAS);
+
+        if ($pathValue) {
+            $qb->where(sprintf(LTreeOperatorFunction::FUNCTION_NAME . '(%s.%s, \'~\', :self_path) = false', static::LTREE_ALIAS, $pathName));
+            $qb->setParameter('self_path', $pathValue, LTreeType::TYPE_NAME);
+        }
+
+        $qb->orderBy(sprintf('%s.%s', static::LTREE_ALIAS, $pathName), 'ASC');
+
+        return $qb;
+    }
+
+    /**
+     * @param object $entity
      * @param int $hydrate
      * @return array|mixed
      * @throws PropertyNotFoundException
