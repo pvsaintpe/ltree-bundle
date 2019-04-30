@@ -19,19 +19,19 @@ interface LTreeEntityRepositoryInterface extends ObjectRepository
      * @param TreeBuilderInterface $treeBuilder
      * @return LTreeEntityRepositoryInterface
      */
-    public function setTreeBuilder(TreeBuilderInterface $treeBuilder): self;
+    public function setTreeBuilder(TreeBuilderInterface $treeBuilder);
 
     /**
      * @param PropertyAccessorInterface $propertyAccessor
      * @return LTreeEntityRepositoryInterface
      */
-    public function setPropertyAccessor(PropertyAccessorInterface $propertyAccessor): self;
+    public function setPropertyAccessor(PropertyAccessorInterface $propertyAccessor);
 
     /**
      * @param AnnotationDriverInterface $annotationDriver
      * @return LTreeEntityRepositoryInterface
      */
-    public function setAnnotationDriver(AnnotationDriverInterface $annotationDriver): self;
+    public function setAnnotationDriver(AnnotationDriverInterface $annotationDriver);
 
     /**
      * @param object $entity object entity

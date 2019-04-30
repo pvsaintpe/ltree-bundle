@@ -1,9 +1,11 @@
 <?php
 
-namespace LTree\Repository;
+namespace LTree\Traits;
 
-use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
+use Doctrine\ORM\QueryBuilder;
+use InvalidArgumentException;
+use LogicException;
 use LTree\Annotation\Driver\AnnotationDriverInterface;
 use LTree\DqlFunction\LTreeConcatFunction;
 use LTree\DqlFunction\LTreeNlevelFunction;
@@ -12,20 +14,9 @@ use LTree\DqlFunction\LTreeSubpathFunction;
 use LTree\TreeBuilder\TreeBuilderInterface;
 use LTree\Types\LTreeType;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
-use LogicException;
-use LTree\Annotation\Driver\PropertyNotFoundException;
-use InvalidArgumentException;
-use Doctrine\ORM\QueryBuilder;
-use ReflectionException;
 
-/**
- * Class LTreeEntityRepository
- * @package LTree\Repository
- */
-class LTreeEntityRepository extends EntityRepository implements LTreeEntityRepositoryInterface
+trait LTreeTrait
 {
-    public const LTREE_ALIAS = 'ltree_entity';
-
     /**
      * @var AnnotationDriverInterface
      */
@@ -42,31 +33,28 @@ class LTreeEntityRepository extends EntityRepository implements LTreeEntityRepos
     private $treeBuilder;
 
     /**
-     * @return TreeBuilderInterface
+     * @param $alias
+     * @param null $indexBy
+     * @return QueryBuilder
      */
+    abstract public function createQueryBuilder($alias, $indexBy = null);
+
+    abstract public function getClassName();
+
     public function getTreeBuilder(): TreeBuilderInterface
     {
         if ($this->treeBuilder === null) {
             throw new LogicException('Repository must inject property accessor service itself');
         }
-
         return $this->treeBuilder;
     }
 
-    /**
-     * @param TreeBuilderInterface $treeBuilder
-     * @return LTreeEntityRepository
-     */
     public function setTreeBuilder(TreeBuilderInterface $treeBuilder)
     {
         $this->treeBuilder = $treeBuilder;
-
         return $this;
     }
 
-    /**
-     * @return PropertyAccessorInterface
-     */
     public function getPropertyAccessor(): PropertyAccessorInterface
     {
         if ($this->propertyAccessor === null) {
@@ -75,20 +63,12 @@ class LTreeEntityRepository extends EntityRepository implements LTreeEntityRepos
         return $this->propertyAccessor;
     }
 
-    /**
-     * @param PropertyAccessorInterface $propertyAccessor
-     * @return LTreeEntityRepository
-     */
     public function setPropertyAccessor(PropertyAccessorInterface $propertyAccessor)
     {
         $this->propertyAccessor = $propertyAccessor;
-
         return $this;
     }
 
-    /**
-     * @return AnnotationDriverInterface
-     */
     public function getAnnotationDriver(): AnnotationDriverInterface
     {
         if ($this->annotationDriver === null) {
@@ -97,21 +77,12 @@ class LTreeEntityRepository extends EntityRepository implements LTreeEntityRepos
         return $this->annotationDriver;
     }
 
-    /**
-     * @param AnnotationDriverInterface $annotationDriver
-     * @return $this
-     */
     public function setAnnotationDriver(AnnotationDriverInterface $annotationDriver)
     {
         $this->annotationDriver = $annotationDriver;
-
         return $this;
     }
 
-    /**
-     * @param $entity
-     * @throws ReflectionException
-     */
     protected function checkClass($entity): void
     {
         if (!is_a($entity, $this->getClassName())) {
@@ -123,33 +94,22 @@ class LTreeEntityRepository extends EntityRepository implements LTreeEntityRepos
         }
     }
 
-    /**
-     * @param object $entity
-     * @return QueryBuilder
-     * @throws PropertyNotFoundException
-     * @throws ReflectionException
-     */
     public function getAllParentQueryBuilder($entity): QueryBuilder
     {
         $this->checkClass($entity);
         $pathName = $this->getAnnotationDriver()->getPathProperty($entity)->getName();
         $pathValue = $this->getPropertyAccessor()->getValue($entity, $pathName);
 
-        $qb = $this->createQueryBuilder(static::LTREE_ALIAS);
-        $qb->where(sprintf(LTreeOperatorFunction::FUNCTION_NAME . '(%s.%s, \'@>\', :self_path) = true', static::LTREE_ALIAS, $pathName));
-        $qb->andWhere(sprintf('%s.%s <> :self_path', static::LTREE_ALIAS, $pathName));
-        $qb->orderBy(sprintf('%s.%s', static::LTREE_ALIAS, $pathName), 'DESC');
+        $alias = $this->getLTreeAlias();
+        $qb = $this->createQueryBuilder($alias);
+        $qb->where(sprintf(LTreeOperatorFunction::FUNCTION_NAME . '(%s.%s, \'@>\', :self_path) = true', $alias, $pathName));
+        $qb->andWhere(sprintf('%s.%s <> :self_path', $alias, $pathName));
+        $qb->orderBy(sprintf('%s.%s', static::$alias, $pathName), 'DESC');
         $qb->setParameter('self_path', $pathValue, LTreeType::TYPE_NAME);
 
         return $qb;
     }
 
-    /**
-     * @param object $entity
-     * @return QueryBuilder
-     * @throws PropertyNotFoundException
-     * @throws ReflectionException
-     */
     public function getAllChildrenQueryBuilder($entity): QueryBuilder
     {
         $this->checkClass($entity);
@@ -157,22 +117,17 @@ class LTreeEntityRepository extends EntityRepository implements LTreeEntityRepos
         $pathValue = $this->getPropertyAccessor()->getValue($entity, $pathName);
         $orderFieldName = 'parent_paths_for_order';
 
-        $qb = $this->createQueryBuilder(static::LTREE_ALIAS);
-        $qb->addSelect(sprintf(LTreeSubpathFunction::FUNCTION_NAME . '(%s.%s, 0, -1) as HIDDEN %s', static::LTREE_ALIAS, $pathName, $orderFieldName));
-        $qb->where(sprintf(LTreeOperatorFunction::FUNCTION_NAME . '(%s.%s, \'<@\', :self_path) = true', static::LTREE_ALIAS, $pathName));
-        $qb->andWhere(sprintf('%s.%s <> :self_path', static::LTREE_ALIAS, $pathName));
+        $alias = $this->getLTreeAlias();
+        $qb = $this->createQueryBuilder($alias);
+        $qb->addSelect(sprintf(LTreeSubpathFunction::FUNCTION_NAME . '(%s.%s, 0, -1) as HIDDEN %s', $alias, $pathName, $orderFieldName));
+        $qb->where(sprintf(LTreeOperatorFunction::FUNCTION_NAME . '(%s.%s, \'<@\', :self_path) = true', $alias, $pathName));
+        $qb->andWhere(sprintf('%s.%s <> :self_path', $alias, $pathName));
         $qb->orderBy($orderFieldName);
         $qb->setParameter('self_path', $pathValue, LTreeType::TYPE_NAME);
 
         return $qb;
     }
 
-    /**
-     * @param object|null $entity
-     * @return QueryBuilder
-     * @throws PropertyNotFoundException
-     * @throws ReflectionException
-     */
     public function getInverseLTreeBuilder($entity = null): QueryBuilder
     {
         if (empty($entity)) {
@@ -193,49 +148,29 @@ class LTreeEntityRepository extends EntityRepository implements LTreeEntityRepos
             $pathValue = [];
         }
 
-        $qb = $this->createQueryBuilder(static::LTREE_ALIAS);
+        $alias = $this->getLTreeAlias();
+        $qb = $this->createQueryBuilder($alias);
 
         if ($pathValue) {
-            $qb->where(sprintf(LTreeOperatorFunction::FUNCTION_NAME . '(%s.%s, \'~\', :self_path) = false', static::LTREE_ALIAS, $pathName));
+            $qb->where(sprintf(LTreeOperatorFunction::FUNCTION_NAME . '(%s.%s, \'~\', :self_path) = false', $alias, $pathName));
             $qb->setParameter('self_path', $pathValue, LTreeType::TYPE_NAME);
         }
 
-        $qb->orderBy(sprintf('%s.%s', static::LTREE_ALIAS, $pathName), 'ASC');
+        $qb->orderBy(sprintf('%s.%s', $alias, $pathName), 'ASC');
 
         return $qb;
     }
 
-    /**
-     * @param object $entity
-     * @param int $hydrate
-     * @return array|mixed
-     * @throws PropertyNotFoundException
-     * @throws ReflectionException
-     */
     public function getAllParent($entity, $hydrate = Query::HYDRATE_OBJECT)
     {
         return $this->getAllParentQueryBuilder($entity)->getQuery()->getResult($hydrate);
     }
 
-    /**
-     * @param int $hydrate
-     * @return array|mixed
-     * @throws PropertyNotFoundException
-     * @throws ReflectionException
-     */
     public function getAllLTree($hydrate = Query::HYDRATE_OBJECT)
     {
         return $this->getInverseLTreeBuilder()->getQuery()->getResult($hydrate);
     }
 
-    /**
-     * @param object $entity
-     * @param bool $treeMode
-     * @param int $hydrate
-     * @return array|mixed|object
-     * @throws PropertyNotFoundException
-     * @throws ReflectionException
-     */
     public function getAllChildren($entity, $treeMode = false, $hydrate = Query::HYDRATE_OBJECT)
     {
         $this->checkClass($entity);
@@ -257,13 +192,6 @@ class LTreeEntityRepository extends EntityRepository implements LTreeEntityRepos
         return $this->treeBuilder->buildTree($result, $pathName, $pathValue, $parentName, $childName);
     }
 
-    /**
-     * @param object $entity
-     * @param array|object|null $to (if null move to root node)
-     * @throws PropertyNotFoundException
-     * @throws ReflectionException
-     * @return mixed
-     */
     public function moveNode($entity, $to = null)
     {
         $this->checkClass($entity);
@@ -277,15 +205,16 @@ class LTreeEntityRepository extends EntityRepository implements LTreeEntityRepos
             $newPathValue = [];
         }
 
-        $prepareString = static function ($str) use ($pathName) {
+        $alias = $this->getLTreeAlias();
+        $prepareString = static function ($str) use ($pathName, $alias) {
             $replacement = [
-                '%alias%' => static::LTREE_ALIAS,
+                '%alias%' => $alias,
                 '%path%' => $pathName
             ];
             return str_replace(array_keys($replacement), array_values($replacement), $str);
         };
 
-        $qb = $this->createQueryBuilder(static::LTREE_ALIAS)
+        $qb = $this->createQueryBuilder($alias)
             ->update()
             ->set(
                 $prepareString('%alias%.%path%'),
@@ -304,5 +233,10 @@ class LTreeEntityRepository extends EntityRepository implements LTreeEntityRepos
         ;
 
         return $qb->getQuery()->execute();
+    }
+
+    protected function getLTreeAlias(): string
+    {
+        return 'ltree_entity';
     }
 }
