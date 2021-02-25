@@ -28,7 +28,7 @@
     "symfony": {
       "id": "",
       "allow-contrib": false,
-      "require": "4.2.*"
+      "require": "4.2.*|5.*"
     }
   }
 }
