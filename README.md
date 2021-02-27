@@ -94,3 +94,25 @@ class TestRepository extends LTreeEntityRepository
 }
 ```
 
+3. Create Extension via migration
+```php
+    public function up(Schema $schema) : void
+    {
+        $this->addSql('CREATE IF NOT EXISTS EXTENSION ltree');
+    }
+    ...
+```
+
+4. Configure Doctrine Type via config (packages/doctrine.yaml):
+```yaml
+doctrine:
+    dbal:
+        url: '%env(resolve:DATABASE_URL)%'
+        types:
+            ltree:  LTree\Types\LTreeType
+```
+
+5. Configure Bundle via config (bundles.php):
+```php
+LTree\LTreeExtensionBundle::class => ['all' => true],
+```
