@@ -15,7 +15,7 @@ interface LTreePathInterface
 
     /**
      * @param array|null $path
-     * @return LTreeEntityInterface
+     * @return LTreeEntityInterface|LTreePathInterface
      */
     public function setPath(?array $path);
 
