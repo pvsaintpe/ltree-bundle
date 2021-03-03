@@ -2,7 +2,7 @@
 
 namespace LTree\Repository;
 
-use Doctrine\Common\Persistence\ObjectRepository;
+use Doctrine\Persistence\ObjectRepository;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
 use LTree\Annotation\Driver\AnnotationDriverInterface;
